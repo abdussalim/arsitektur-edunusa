@@ -29,7 +29,7 @@
   @media(min-width:1180px){ .page{grid-template-columns:238px minmax(0,1fr)} }
   .content{min-width:0;max-width:1180px}
 
-  /* ---------- sidebar nav ---------- */
+  /* ---------- sidebar nav (desktop) ---------- */
   .toc{display:none}
   @media(min-width:1180px){
     .toc{display:block;position:sticky;top:2rem;align-self:start;max-height:calc(100vh - 4rem);overflow-y:auto}
@@ -104,7 +104,8 @@
     white-space:pre}
 
   /* ---------- tables ---------- */
-  .tw{overflow-x:auto;margin:1.1rem 0 1.4rem;border:1px solid var(--line);border-radius:.65rem;background:var(--panel)}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1.1rem 0 1.4rem;
+    border:1px solid var(--line);border-radius:.65rem;background:var(--panel)}
   table{border-collapse:collapse;width:100%;font-size:.89rem;min-width:520px}
   th{text-align:left;font-weight:600;color:#eef3fa;background:var(--panel2);padding:.72rem 1rem;
     border-bottom:1px solid var(--line);font-size:.8rem;letter-spacing:.03em}
@@ -131,10 +132,24 @@
 
   /* ---------- figures ---------- */
   figure{margin:1.4rem 0 1.6rem;background:var(--panel);border:1px solid var(--line);
-    border-radius:.85rem;padding:1.35rem;overflow-x:auto}
+    border-radius:.85rem;padding:1.35rem}
+  .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
   figure svg{width:100%;height:auto;display:block;min-width:720px}
   figcaption{margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--line-soft);
     font-size:.83rem;color:var(--dim);text-align:center}
+
+  /* bayangan tepi: penanda bahwa isinya masih bisa digeser ke samping */
+  .tw,.scroller{
+    background-image:
+      linear-gradient(to right,var(--panel),var(--panel)),
+      linear-gradient(to left,var(--panel),var(--panel)),
+      linear-gradient(to right,rgba(0,0,0,.5),rgba(0,0,0,0)),
+      linear-gradient(to left,rgba(0,0,0,.5),rgba(0,0,0,0));
+    background-position:left center,right center,left center,right center;
+    background-repeat:no-repeat;
+    background-size:26px 100%,26px 100%,15px 100%,15px 100%;
+    background-attachment:local,local,scroll,scroll;
+  }
 
   /* ---------- glossary ---------- */
   .gloss{display:grid;gap:.7rem}
@@ -152,13 +167,128 @@
 
   /* ---------- mode ringkas ---------- */
   body.ringkas .deep{display:none !important}
+
+  /* ---------- navigasi bawah untuk layar kecil ---------- */
+  .mnav,.sheet,.scrim{display:none}
+
+  @media(max-width:1179px){
+    body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+    section{scroll-margin-top:1rem}
+
+    /* bilah bawah */
+    .mnav{display:block;position:fixed;left:0;right:0;bottom:0;z-index:70;
+      background:rgba(11,17,30,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+    .mnav-progress{height:2px;background:rgba(34,211,238,.12)}
+    .mnav-progress span{display:block;height:100%;width:0;background:var(--cyan);transition:width .1s linear}
+    .mnav-items{display:grid;grid-template-columns:repeat(4,1fr);max-width:560px;margin:0 auto}
+    .mnav-items button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.22rem;
+      min-height:60px;padding:.4rem .2rem;cursor:pointer;background:transparent;border:0;
+      font-family:var(--sans);font-size:.68rem;font-weight:500;color:var(--dim);
+      -webkit-tap-highlight-color:transparent;transition:color .15s}
+    .mnav-items button svg{width:21px;height:21px;stroke:currentColor;fill:none;
+      stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .mnav-items button:active{color:var(--text)}
+    .mnav-items button.on{color:var(--cyan)}
+    .mnav-badge{font-family:var(--mono);font-size:.62rem;color:var(--cyan)}
+
+    /* lapisan gelap di belakang lembar */
+    .scrim{display:block;position:fixed;inset:0;z-index:71;background:rgba(3,7,15,.72);
+      opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+    body.nav-open .scrim{opacity:1;visibility:visible}
+
+    /* lembar daftar isi yang naik dari bawah */
+    .sheet{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:72;
+      max-height:78vh;background:var(--panel);border-top:1px solid var(--line);
+      border-radius:1.1rem 1.1rem 0 0;padding-bottom:env(safe-area-inset-bottom,0px);
+      transform:translateY(101%);transition:transform .26s cubic-bezier(.32,.72,0,1)}
+    body.nav-open .sheet{transform:none}
+    body.nav-open{overflow:hidden}
+    .sheet-grip{width:38px;height:4px;border-radius:99px;background:var(--line);
+      margin:.6rem auto .2rem;flex:none}
+    .sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+      padding:.5rem 1.15rem .7rem;border-bottom:1px solid var(--line-soft);flex:none}
+    .sheet-head b{font-size:.95rem;font-weight:600;color:var(--text)}
+    .sheet-head em{font-style:normal;font-size:.75rem;color:var(--dim);font-family:var(--mono)}
+    .sheet-list{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:.5rem .7rem 1.1rem}
+    .sheet-list a{display:flex;align-items:center;gap:.85rem;min-height:48px;padding:.5rem .75rem;
+      color:var(--muted);text-decoration:none;font-size:.94rem;border-radius:.55rem;
+      border:1px solid transparent}
+    .sheet-list a .num{font-family:var(--mono);font-size:.75rem;color:var(--dim);flex:none;width:1.6rem}
+    .sheet-list a.on{color:var(--text);background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.28)}
+    .sheet-list a.on .num{color:var(--cyan)}
+  }
+
+  /* diagram: versi lebar untuk layar besar, versi tegak untuk layar kecil */
+  .d-mobile{display:none}
+  @media(min-width:720px) and (max-width:900px){
+    figure::before{
+      content:"Geser diagram ke samping untuk melihat bagian kanan";
+      display:block;margin-bottom:.8rem;font-size:.78rem;color:var(--dim);
+      font-family:var(--mono);letter-spacing:.02em}
+  }
+  @media(max-width:719px){
+    .d-wide{display:none}
+    .d-mobile{display:block}
+    .d-mobile svg{width:100%;height:auto;display:block;min-width:0}
+  }
+
+  @media(max-width:640px){
+    body{font-size:15.5px}
+    .page{padding:1.4rem 1rem 3rem;gap:1.5rem}
+    h1{font-size:1.55rem}
+    h2{font-size:1.2rem;gap:.5rem}
+    .lede{font-size:.97rem}
+    figure{padding:.9rem;border-radius:.65rem}
+    .card{padding:1rem}
+    .grid{grid-template-columns:1fr}
+    ol.steps li{padding-left:2.3rem}
+    .switch{flex-direction:column;align-items:flex-start;gap:.6rem}
+    .block{font-size:.78rem}
+    code{overflow-wrap:anywhere}
+  }
 </style>
 </head>
 <body>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Daftar isi">
+  <div class="sheet-grip"></div>
+  <div class="sheet-head">
+    <b>Daftar isi</b>
+    <em id="sheet-now">00 &middot; Ringkasan</em>
+  </div>
+  <div class="sheet-list" id="sheet-list"></div>
+</div>
+
+<nav class="mnav" aria-label="Navigasi dokumen">
+  <div class="mnav-progress"><span id="mnav-progress"></span></div>
+  <div class="mnav-items">
+    <button id="nav-toc" aria-expanded="false" aria-controls="sheet">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span>Daftar isi</span>
+    </button>
+    <button id="nav-mode">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 010 16" fill="currentColor" stroke="none" opacity=".38"/></svg>
+      <span id="nav-mode-label">Lengkap</span>
+    </button>
+    <button id="nav-gloss">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 015.5 4H10a2 2 0 012 2v13a2 2 0 00-2-2H5.5A1.5 1.5 0 014 15.5z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H14a2 2 0 00-2 2v13a2 2 0 012-2h4.5a1.5 1.5 0 001.5-1.5z"/></svg>
+      <span>Glosarium</span>
+    </button>
+    <button id="nav-top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6"/><path d="M6 11l6-6 6 6"/></svg>
+      <span>Ke atas</span>
+    </button>
+  </div>
+</nav>
+
 <div class="page">
 
-  <nav class="toc" aria-label="Daftar isi">
+  <nav class="toc" id="toc" aria-label="Daftar isi">
     <div class="toc-title">Daftar isi</div>
+    <div class="toc-list" id="toc-list">
     <a href="#ringkasan"><span class="num">00</span>Ringkasan</a>
     <a href="#platform"><span class="num">01</span>Lapisan platform</a>
     <a href="#pipeline"><span class="num">02</span>Kode ke container</a>
@@ -171,6 +301,7 @@
     <a href="#keamanan"><span class="num">09</span>Keamanan</a>
     <a href="#glosarium"><span class="num">10</span>Glosarium</a>
     <a href="#catatan"><span class="num">11</span>Catatan sumber</a>
+    </div>
   </nav>
 
   <main class="content">
@@ -260,6 +391,7 @@
       </div>
 
       <figure>
+        <div class="scroller d-wide">
         <svg viewBox="0 0 1160 300" xmlns="http://www.w3.org/2000/svg" role="img"
              aria-label="Diagram lapisan: Proxmox VE membungkus VM edunusa-tools, yang membungkus Docker Engine, yang membungkus container layanan">
           <rect x="18" y="16" width="1124" height="266" rx="14" fill="rgba(251,191,36,.05)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="10,5"/>
@@ -297,6 +429,57 @@
             <text x="1034" y="182" fill="#fff">Vector</text><text x="1034" y="200" fill="#94a3b8" font-size="10.5">pencatat log</text>
           </g>
         </svg>
+        </div>
+        <div class="d-mobile">
+        <svg viewBox="0 0 360 476" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram lapisan versi tegak: Proxmox membungkus VM edunusa-tools, yang membungkus Docker Engine berisi container layanan">
+          <g font-family="Inter,sans-serif">
+            <rect x="6" y="6" width="348" height="464" rx="12" fill="rgba(251,191,36,.05)" stroke="#fbbf24" stroke-width="1.4" stroke-dasharray="9,5"/>
+            <text x="20" y="29" fill="#fbbf24" font-size="12.5" font-weight="600">Proxmox VE &mdash; server fisik</text>
+
+            <rect x="18" y="40" width="324" height="422" rx="10" fill="rgba(148,163,184,.05)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="32" y="63" fill="#e2e8f0" font-size="12" font-weight="600">VM edunusa-tools</text>
+            <text x="32" y="80" fill="#94a3b8" font-size="10">Ubuntu 24.04.4 &middot; 32 vCPU &middot; 24 GB RAM</text>
+
+            <rect x="30" y="90" width="300" height="360" rx="9" fill="rgba(34,211,238,.05)" stroke="#22d3ee" stroke-width="1.4"/>
+            <text x="44" y="112" fill="#22d3ee" font-size="11.5" font-weight="600">Docker Engine</text>
+
+            <g text-anchor="middle">
+              <rect x="42" y="124" width="132" height="70" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.3"/>
+              <text x="108" y="152" fill="#fff" font-size="11.5" font-weight="600">Traefik</text>
+              <text x="108" y="172" fill="#94a3b8" font-size="9.5">reverse proxy</text>
+
+              <rect x="186" y="124" width="132" height="70" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.3"/>
+              <text x="252" y="152" fill="#fff" font-size="11.5" font-weight="600">Kong</text>
+              <text x="252" y="172" fill="#94a3b8" font-size="9.5">API gateway</text>
+
+              <rect x="42" y="206" width="132" height="70" rx="7" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.3"/>
+              <text x="108" y="234" fill="#fff" font-size="11.5" font-weight="600">Frontend</text>
+              <text x="108" y="254" fill="#94a3b8" font-size="9.5">&times; 3 environment</text>
+
+              <rect x="186" y="206" width="132" height="70" rx="7" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.3"/>
+              <text x="252" y="234" fill="#fff" font-size="11.5" font-weight="600">Backend</text>
+              <text x="252" y="254" fill="#94a3b8" font-size="9.5">&times; 3 environment</text>
+
+              <rect x="42" y="288" width="132" height="70" rx="7" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.3"/>
+              <text x="108" y="316" fill="#fff" font-size="11.5" font-weight="600">Postgres</text>
+              <text x="108" y="336" fill="#94a3b8" font-size="9.5">&times; 3 environment</text>
+
+              <rect x="186" y="288" width="132" height="70" rx="7" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.3"/>
+              <text x="252" y="316" fill="#fff" font-size="11.5" font-weight="600">MinIO</text>
+              <text x="252" y="336" fill="#94a3b8" font-size="9.5">penyimpanan berkas</text>
+
+              <rect x="42" y="370" width="132" height="70" rx="7" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.3"/>
+              <text x="108" y="398" fill="#fff" font-size="11.5" font-weight="600">Vault</text>
+              <text x="108" y="418" fill="#94a3b8" font-size="9.5">brankas kunci</text>
+
+              <rect x="186" y="370" width="132" height="70" rx="7" fill="rgba(251,146,60,.28)" stroke="#fb923c" stroke-width="1.3"/>
+              <text x="252" y="398" fill="#fff" font-size="11.5" font-weight="600">Vector</text>
+              <text x="252" y="418" fill="#94a3b8" font-size="9.5">pencatat log</text>
+            </g>
+          </g>
+        </svg>
+        </div>
         <figcaption>Empat lapisan, dari server fisik sampai container layanan.</figcaption>
       </figure>
 
@@ -338,6 +521,7 @@
       </div>
 
       <figure>
+        <div class="scroller d-wide">
         <svg viewBox="0 0 1160 540" xmlns="http://www.w3.org/2000/svg" role="img"
              aria-label="Diagram alur: developer mendorong kode ke GitHub, GitHub Actions membangun image dan mendorongnya ke GHCR, runner di server menarik image dan menjalankan container, dengan Vault memasok kredensial">
           <defs>
@@ -427,6 +611,77 @@
             <text x="897" y="495" fill="#94a3b8" font-size="11" text-anchor="middle">lama, tanpa build ulang</text>
           </g>
         </svg>
+        </div>
+        <div class="d-mobile">
+        <svg viewBox="0 0 360 700" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram alur build dan deploy versi tegak, dari developer sampai container aktif, dengan Vault memasok kredensial">
+          <defs>
+            <marker id="m2-s" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker>
+            <marker id="m2-a" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/></marker>
+            <marker id="m2-e" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#34d399"/></marker>
+            <marker id="m2-r" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#fb7185"/></marker>
+          </defs>
+          <g font-family="Inter,sans-serif">
+            <rect x="20" y="8" width="320" height="52" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="32" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Developer</text>
+            <text x="180" y="50" fill="#94a3b8" font-size="10" text-anchor="middle">tulis &amp; commit kode</text>
+
+            <path d="M 100 60 V 88" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#m2-s)"/>
+            <text x="116" y="78" fill="#94a3b8" font-size="10.5">git push</text>
+
+            <rect x="20" y="92" width="320" height="52" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="116" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">GitHub</text>
+            <text x="180" y="134" fill="#94a3b8" font-size="10" text-anchor="middle">repo itn-edunusa-*</text>
+
+            <path d="M 100 144 V 172" fill="none" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#m2-a)"/>
+            <text x="116" y="162" fill="#fbbf24" font-size="10.5">trigger</text>
+
+            <rect x="20" y="176" width="320" height="84" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="180" y="200" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">GitHub Actions</text>
+            <text x="180" y="220" fill="#fbbf24" font-size="10" text-anchor="middle">test &rarr; build image &rarr; push</text>
+            <text x="180" y="238" fill="#94a3b8" font-size="9.5" text-anchor="middle">template reusable dipakai semua repo</text>
+            <text x="180" y="253" fill="#94a3b8" font-size="9.5" text-anchor="middle">itn-edunusa-pipeline-templates</text>
+
+            <path d="M 100 260 V 288" fill="none" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#m2-a)"/>
+            <text x="116" y="278" fill="#fbbf24" font-size="10.5">simpan image</text>
+
+            <rect x="20" y="292" width="320" height="56" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="180" y="316" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">GHCR</text>
+            <text x="180" y="336" fill="#94a3b8" font-size="10" text-anchor="middle">gudang image</text>
+
+            <path d="M 100 348 V 376" fill="none" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#m2-a)"/>
+            <text x="116" y="366" fill="#fbbf24" font-size="10.5">server menarik image</text>
+
+            <rect x="20" y="380" width="320" height="84" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="404" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Runner di server</text>
+            <text x="180" y="424" fill="#94a3b8" font-size="10" text-anchor="middle">self-hosted &middot; be-1..7 &amp; fe-1..7</text>
+            <text x="180" y="441" fill="#94a3b8" font-size="9.5" text-anchor="middle">docker pull lalu compose up</text>
+            <text x="180" y="457" fill="#fb7185" font-size="9.5" text-anchor="middle">memakai secret dari Vault</text>
+
+            <path d="M 100 464 V 492" fill="none" stroke="#34d399" stroke-width="1.4" marker-end="url(#m2-e)"/>
+            <text x="116" y="482" fill="#34d399" font-size="10.5">jalankan</text>
+
+            <rect x="20" y="496" width="320" height="72" rx="8" fill="rgba(6,78,59,.4)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="180" y="520" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Container aktif</text>
+            <text x="180" y="540" fill="#94a3b8" font-size="10" text-anchor="middle">satu container per layanan</text>
+            <text x="180" y="557" fill="#34d399" font-size="10" text-anchor="middle">production &middot; staging &middot; development</text>
+
+            <path d="M 20 638 H 10 V 218" fill="none" stroke="#fb7185" stroke-width="1.3" stroke-dasharray="5,4"/>
+            <path d="M 10 218 H 17" fill="none" stroke="#fb7185" stroke-width="1.3" marker-end="url(#m2-r)"/>
+            <path d="M 10 422 H 17" fill="none" stroke="#fb7185" stroke-width="1.3" marker-end="url(#m2-r)"/>
+
+            <rect x="20" y="594" width="320" height="88" rx="8" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="180" y="620" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Vault</text>
+            <text x="180" y="640" fill="#fb7185" font-size="10" text-anchor="middle">env &middot; kunci SSH &middot; token &middot; kubeconfig</text>
+            <text x="180" y="658" fill="#94a3b8" font-size="9.5" text-anchor="middle">dipakai oleh GitHub Actions dan Runner</text>
+            <text x="180" y="674" fill="#94a3b8" font-size="9.5" text-anchor="middle">tidak ada rahasia di dalam repo</text>
+          </g>
+        </svg>
+        </div>
         <figcaption>Alur build dan deploy. Garis merah putus-putus adalah pengambilan kredensial dari Vault.</figcaption>
       </figure>
 
@@ -546,6 +801,7 @@ contoh nyata:
       </div>
 
       <figure>
+        <div class="scroller d-wide">
         <svg viewBox="0 0 1160 700" xmlns="http://www.w3.org/2000/svg" role="img"
              aria-label="Diagram routing: pengguna publik dan tim VPN masuk lewat Traefik. Frontend dilayani langsung, backend lewat Kong, alat internal dan database berada di zona yang wajib VPN">
           <defs>
@@ -662,6 +918,104 @@ contoh nyata:
             <text x="1013" y="615" fill="#fb7185" font-size="10.5" text-anchor="middle">akses manusia tetap wajib VPN</text>
           </g>
         </svg>
+        </div>
+        <div class="d-mobile">
+        <svg viewBox="0 0 360 990" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram routing versi tegak, dibagi tiga alur: pengguna publik membuka halaman, permintaan data lewat Kong, dan tim internal membuka alat internal lewat VPN">
+          <defs>
+            <marker id="m3-c" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/></marker>
+            <marker id="m3-a" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/></marker>
+            <marker id="m3-e" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#34d399"/></marker>
+            <marker id="m3-v" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#a78bfa"/></marker>
+            <marker id="m3-r" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#fb7185"/></marker>
+          </defs>
+          <g font-family="Inter,sans-serif">
+            <!-- alur 1 -->
+            <text x="20" y="22" fill="#22d3ee" font-size="11.5" font-weight="600">1 &middot; Pengguna publik membuka halaman</text>
+
+            <rect x="20" y="32" width="320" height="54" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="56" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Pengguna publik</text>
+            <text x="180" y="76" fill="#94a3b8" font-size="10" text-anchor="middle">siswa, guru, umum</text>
+
+            <path d="M 100 86 V 112" fill="none" stroke="#22d3ee" stroke-width="1.4" marker-end="url(#m3-c)"/>
+            <text x="116" y="103" fill="#22d3ee" font-size="10.5">HTTPS :443</text>
+
+            <rect x="20" y="116" width="320" height="60" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="180" y="140" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Traefik</text>
+            <text x="180" y="159" fill="#fbbf24" font-size="10" text-anchor="middle">pintu masuk tunggal, memasang TLS</text>
+
+            <path d="M 100 176 V 202" fill="none" stroke="#22d3ee" stroke-width="1.4" marker-end="url(#m3-c)"/>
+            <text x="116" y="193" fill="#22d3ee" font-size="10.5">langsung, tanpa Kong</text>
+
+            <rect x="20" y="206" width="320" height="82" rx="8" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.5"/>
+            <text x="180" y="230" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Frontend</text>
+            <text x="180" y="249" fill="#94a3b8" font-size="10" text-anchor="middle">cbt &middot; sso &middot; spp &middot; rapor</text>
+            <text x="180" y="266" fill="#34d399" font-size="10" text-anchor="middle">production &amp; staging: terbuka publik</text>
+            <text x="180" y="282" fill="#fb7185" font-size="10" text-anchor="middle">development: hanya dari VPN</text>
+
+            <line x1="20" y1="312" x2="340" y2="312" stroke="#22304a" stroke-width="1"/>
+
+            <!-- alur 2 -->
+            <text x="20" y="342" fill="#fbbf24" font-size="11.5" font-weight="600">2 &middot; Permintaan data lewat gateway</text>
+
+            <rect x="20" y="352" width="320" height="46" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="180" y="380" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Traefik</text>
+
+            <path d="M 100 398 V 424" fill="none" stroke="#fbbf24" stroke-width="1.4" marker-end="url(#m3-a)"/>
+            <text x="116" y="415" fill="#fbbf24" font-size="10.5">permintaan API</text>
+
+            <rect x="20" y="428" width="320" height="66" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="180" y="452" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Kong API Gateway</text>
+            <text x="180" y="471" fill="#fbbf24" font-size="10" text-anchor="middle">satu instans per environment</text>
+            <text x="180" y="487" fill="#94a3b8" font-size="9.5" text-anchor="middle">memeriksa autentikasi dan batas laju</text>
+
+            <path d="M 100 494 V 520" fill="none" stroke="#34d399" stroke-width="1.4" marker-end="url(#m3-e)"/>
+            <text x="116" y="511" fill="#34d399" font-size="10.5">teruskan</text>
+
+            <rect x="20" y="524" width="320" height="64" rx="8" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="180" y="548" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Backend</text>
+            <text x="180" y="567" fill="#34d399" font-size="10" text-anchor="middle">Node.js &middot; Golang &middot; Hono &middot; Java</text>
+            <text x="180" y="583" fill="#94a3b8" font-size="9.5" text-anchor="middle">wapi &middot; simultan &middot; pelita &middot; presensi</text>
+
+            <path d="M 100 588 V 614" fill="none" stroke="#a78bfa" stroke-width="1.4" marker-end="url(#m3-v)"/>
+            <text x="116" y="605" fill="#a78bfa" font-size="10.5">baca &amp; tulis data</text>
+
+            <rect x="20" y="618" width="320" height="66" rx="8" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="180" y="642" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Data &amp; penyimpanan</text>
+            <text x="180" y="661" fill="#94a3b8" font-size="10" text-anchor="middle">PostgreSQL 18 &times; 3 &middot; MinIO</text>
+            <text x="180" y="677" fill="#a78bfa" font-size="9.5" text-anchor="middle">lewat jaringan Docker internal</text>
+
+            <line x1="20" y1="708" x2="340" y2="708" stroke="#22304a" stroke-width="1"/>
+
+            <!-- alur 3 -->
+            <text x="20" y="738" fill="#fb7185" font-size="11.5" font-weight="600">3 &middot; Tim internal membuka alat internal</text>
+
+            <rect x="20" y="748" width="320" height="54" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="772" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Tim internal</text>
+            <text x="180" y="792" fill="#94a3b8" font-size="10" text-anchor="middle">dari kantor atau OpenVPN</text>
+
+            <path d="M 100 802 V 828" fill="none" stroke="#fb7185" stroke-width="1.4" marker-end="url(#m3-r)"/>
+            <text x="116" y="819" fill="#fb7185" font-size="10.5">lewat VPN</text>
+
+            <rect x="20" y="832" width="320" height="56" rx="8" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="180" y="856" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Gerbang akses</text>
+            <text x="180" y="876" fill="#fb7185" font-size="10" text-anchor="middle">firewall + daftar IP terdaftar</text>
+
+            <path d="M 100 888 V 914" fill="none" stroke="#fb7185" stroke-width="1.4" marker-end="url(#m3-r)"/>
+            <text x="116" y="905" fill="#fb7185" font-size="10.5">lolos, lalu ke Traefik</text>
+
+            <rect x="20" y="918" width="320" height="64" rx="8" fill="rgba(136,19,55,.35)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="180" y="942" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Alat internal</text>
+            <text x="180" y="961" fill="#94a3b8" font-size="10" text-anchor="middle">Grafana &middot; Vault &middot; pgAdmin4 &middot; Node-RED</text>
+            <text x="180" y="977" fill="#94a3b8" font-size="10" text-anchor="middle">EMQX &middot; OpenWA &middot; Redis &middot; Kong tools</text>
+          </g>
+        </svg>
+        </div>
         <figcaption>Frontend dilayani langsung oleh Traefik. Backend selalu melewati Kong. Zona bergaris merah hanya terbuka dari VPN.</figcaption>
       </figure>
 
@@ -779,6 +1133,7 @@ traefik.http.routers.itn-edunusa-cbt-fe-development-ctr.middlewares
       </div>
 
       <figure>
+        <div class="scroller d-wide">
         <svg viewBox="0 0 1160 330" xmlns="http://www.w3.org/2000/svg" role="img"
              aria-label="Diagram logging: container dan agen di server lain mengirim log ke Vector, Vector mengirim ke VictoriaLogs, Grafana menampilkannya">
           <defs>
@@ -833,6 +1188,56 @@ traefik.http.routers.itn-edunusa-cbt-fe-development-ctr.middlewares
             <text x="1050" y="200" fill="#fb7185" font-size="10.5" text-anchor="middle">hanya dari VPN</text>
           </g>
         </svg>
+        </div>
+        <div class="d-mobile">
+        <svg viewBox="0 0 360 540" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram logging versi tegak: container dan agen server lain mengirim log ke Vector, lalu VictoriaLogs, lalu Grafana">
+          <defs>
+            <marker id="m4-o" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#fb923c"/></marker>
+          </defs>
+          <g font-family="Inter,sans-serif">
+            <rect x="14" y="8" width="160" height="84" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="94" y="34" fill="#fff" font-size="11.5" font-weight="600" text-anchor="middle">Semua container</text>
+            <text x="94" y="54" fill="#94a3b8" font-size="9.5" text-anchor="middle">di VM edunusa-tools</text>
+            <text x="94" y="72" fill="#fb923c" font-size="9.5" text-anchor="middle">docker socket</text>
+
+            <rect x="186" y="8" width="160" height="84" rx="8" fill="rgba(251,146,60,.22)" stroke="#fb923c" stroke-width="1.4"/>
+            <text x="266" y="34" fill="#fff" font-size="11.5" font-weight="600" text-anchor="middle">Agen server lain</text>
+            <text x="266" y="54" fill="#94a3b8" font-size="9.5" text-anchor="middle">Vector agent</text>
+            <text x="266" y="72" fill="#fb923c" font-size="9.5" text-anchor="middle">HTTP port 8687</text>
+
+            <path d="M 94 92 V 112 H 180" fill="none" stroke="#fb923c" stroke-width="1.4"/>
+            <path d="M 266 92 V 112 H 180" fill="none" stroke="#fb923c" stroke-width="1.4"/>
+            <path d="M 180 112 V 136" fill="none" stroke="#fb923c" stroke-width="1.4" marker-end="url(#m4-o)"/>
+
+            <rect x="20" y="140" width="320" height="110" rx="8" fill="rgba(251,146,60,.28)" stroke="#fb923c" stroke-width="1.5"/>
+            <text x="180" y="166" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Vector</text>
+            <text x="180" y="187" fill="#fb923c" font-size="10" text-anchor="middle">mengumpulkan &amp; memberi label</text>
+            <text x="180" y="207" fill="#94a3b8" font-size="9.5" text-anchor="middle">label: environment, jenis log,</text>
+            <text x="180" y="223" fill="#94a3b8" font-size="9.5" text-anchor="middle">nama layanan, asal server</text>
+            <text x="180" y="242" fill="#94a3b8" font-size="9.5" text-anchor="middle">membaca JSON bila ada, selebihnya teks</text>
+
+            <path d="M 100 250 V 276" fill="none" stroke="#fb923c" stroke-width="1.4" marker-end="url(#m4-o)"/>
+            <text x="116" y="267" fill="#fb923c" font-size="10.5">simpan</text>
+
+            <rect x="20" y="280" width="320" height="106" rx="8" fill="rgba(251,146,60,.28)" stroke="#fb923c" stroke-width="1.5"/>
+            <text x="180" y="306" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">VictoriaLogs</text>
+            <text x="180" y="327" fill="#fb923c" font-size="10" text-anchor="middle">gudang penyimpanan log &middot; versi 1.51</text>
+            <text x="180" y="347" fill="#94a3b8" font-size="9.5" text-anchor="middle">diindeks agar bisa dicari per</text>
+            <text x="180" y="363" fill="#94a3b8" font-size="9.5" text-anchor="middle">environment, layanan, dan jenis log</text>
+
+            <path d="M 100 386 V 412" fill="none" stroke="#fb923c" stroke-width="1.4" marker-end="url(#m4-o)"/>
+            <text x="116" y="403" fill="#fb923c" font-size="10.5">query</text>
+
+            <rect x="20" y="416" width="320" height="100" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="180" y="442" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Grafana</text>
+            <text x="180" y="463" fill="#94a3b8" font-size="10" text-anchor="middle">dashboard log aplikasi &amp; infrastruktur</text>
+            <text x="180" y="481" fill="#94a3b8" font-size="10" text-anchor="middle">dipisah per environment</text>
+            <text x="180" y="502" fill="#fb7185" font-size="10" text-anchor="middle">hanya bisa dibuka dari VPN</text>
+          </g>
+        </svg>
+        </div>
         <figcaption>Log mengalir satu arah, dari container sampai ke dashboard.</figcaption>
       </figure>
 
@@ -1026,25 +1431,116 @@ traefik.http.routers.itn-edunusa-cbt-fe-development-ctr.middlewares
     try { saved = localStorage.getItem('edunusa-mode'); } catch (e) {}
     setMode(saved === 'ringkas' ? 'ringkas' : 'lengkap', false);
 
-    // sorot bagian yang sedang dibaca pada daftar isi
+    // ---- navigasi bawah: lembar daftar isi, penanda bagian, bilah kemajuan ----
     var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var sheet = document.getElementById('sheet');
+    var sheetList = document.getElementById('sheet-list');
+    var sheetNow = document.getElementById('sheet-now');
+    var scrim = document.getElementById('scrim');
+    var btnToc = document.getElementById('nav-toc');
+    var btnMode = document.getElementById('nav-mode');
+    var btnGloss = document.getElementById('nav-gloss');
+    var btnTop = document.getElementById('nav-top');
+    var modeLabel = document.getElementById('nav-mode-label');
+    var progress = document.getElementById('mnav-progress');
+    var sLinks = [];
+
+    links.forEach(function (a) {
+      var c = a.cloneNode(true);
+      c.classList.remove('deep');
+      sheetList.appendChild(c);
+      sLinks.push(c);
+    });
+
+    function openSheet() {
+      body.classList.add('nav-open');
+      btnToc.setAttribute('aria-expanded', 'true');
+      btnToc.classList.add('on');
+      var cur = sheetList.querySelector('a.on');
+      if (cur) cur.scrollIntoView({ block: 'nearest' });
+    }
+    function closeSheet() {
+      body.classList.remove('nav-open');
+      btnToc.setAttribute('aria-expanded', 'false');
+      btnToc.classList.remove('on');
+    }
+    btnToc.addEventListener('click', function () {
+      if (body.classList.contains('nav-open')) closeSheet(); else openSheet();
+    });
+    scrim.addEventListener('click', closeSheet);
+    sheet.addEventListener('click', function (e) { if (e.target.closest('a')) closeSheet(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && body.classList.contains('nav-open')) closeSheet();
+    });
+
+    btnGloss.addEventListener('click', function () {
+      closeSheet();
+      document.getElementById('glosarium').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    btnTop.addEventListener('click', function () {
+      closeSheet();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    btnMode.addEventListener('click', function () {
+      setMode(body.classList.contains('ringkas') ? 'lengkap' : 'ringkas', true);
+    });
+
+    // samakan tampilan bilah bawah dan lembar dengan mode yang aktif
+    var deepHrefs = links.filter(function (a) { return a.classList.contains('deep'); })
+                         .map(function (a) { return a.getAttribute('href'); });
+    function syncMode() {
+      var ringkas = body.classList.contains('ringkas');
+      modeLabel.textContent = ringkas ? 'Ringkas' : 'Lengkap';
+      btnMode.classList.toggle('on', ringkas);
+      sLinks.forEach(function (a) {
+        if (deepHrefs.indexOf(a.getAttribute('href')) > -1) a.hidden = ringkas;
+      });
+    }
+    bR.addEventListener('click', syncMode);
+    bL.addEventListener('click', syncMode);
+    btnMode.addEventListener('click', syncMode);
+    syncMode();
+
+    function setActive(id) {
+      links.forEach(function (a) {
+        var on = a.getAttribute('href') === '#' + id;
+        a.style.color = on ? 'var(--text)' : '';
+        a.style.borderLeftColor = on ? 'var(--cyan)' : '';
+      });
+      sLinks.forEach(function (a) {
+        var on = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('on', on);
+        if (on) {
+          var num = a.querySelector('.num').textContent;
+          sheetNow.textContent = num + ' · ' + a.textContent.replace(num, '').trim();
+        }
+      });
+    }
+
     var sections = links
       .map(function (a) { return document.querySelector(a.getAttribute('href')); })
       .filter(Boolean);
 
     if ('IntersectionObserver' in window && sections.length) {
       var obs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (en) {
-          if (!en.isIntersecting) return;
-          links.forEach(function (a) {
-            var on = a.getAttribute('href') === '#' + en.target.id;
-            a.style.color = on ? 'var(--text)' : '';
-            a.style.borderLeftColor = on ? 'var(--cyan)' : '';
-          });
-        });
-      }, { rootMargin: '-10% 0px -70% 0px' });
+        entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
+      }, { rootMargin: '-12% 0px -70% 0px' });
       sections.forEach(function (s) { obs.observe(s); });
     }
+
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var d = document.documentElement;
+        var max = d.scrollHeight - d.clientHeight;
+        progress.style.width = (max > 0 ? (d.scrollTop / max) * 100 : 0) + '%';
+        ticking = false;
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   })();
 </script>
 </body>
