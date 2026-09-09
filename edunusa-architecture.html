@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arsitektur Infrastruktur Edunusa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b14; --panel:#0e1524; --panel2:#131c2e; --line:#22304a; --line-soft:#1a2438;
+    --text:#dde5f1; --muted:#94a4bd; --dim:#6b7c96;
+    --cyan:#22d3ee; --emerald:#34d399; --amber:#fbbf24; --rose:#fb7185;
+    --violet:#a78bfa; --orange:#fb923c;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:16px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- layout ---------- */
+  .page{max-width:1560px;margin:0 auto;padding:2.5rem 1.75rem 4rem;display:grid;grid-template-columns:1fr;gap:2.5rem}
+  @media(min-width:1180px){ .page{grid-template-columns:238px minmax(0,1fr)} }
+  .content{min-width:0;max-width:1180px}
+
+  /* ---------- sidebar nav ---------- */
+  .toc{display:none}
+  @media(min-width:1180px){
+    .toc{display:block;position:sticky;top:2rem;align-self:start;max-height:calc(100vh - 4rem);overflow-y:auto}
+  }
+  .toc-title{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:.85rem}
+  .toc a{display:block;padding:.32rem .7rem;color:var(--muted);text-decoration:none;font-size:.83rem;
+    border-left:2px solid var(--line-soft);transition:.15s}
+  .toc a:hover{color:var(--text);border-left-color:var(--cyan);background:rgba(34,211,238,.05)}
+  .toc a .num{color:var(--dim);margin-right:.45rem;font-family:var(--mono);font-size:.75rem}
+
+  /* ---------- header ---------- */
+  header{border-bottom:1px solid var(--line);padding-bottom:1.6rem;margin-bottom:2.4rem}
+  .eyebrow{display:flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:.72rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:.7rem}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  h1{font-size:2rem;font-weight:700;letter-spacing:-.02em;line-height:1.25;margin-bottom:.6rem}
+  .lede{color:var(--muted);font-size:1.02rem;max-width:74ch}
+  .meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.2rem}
+  .meta span{font-family:var(--mono);font-size:.72rem;color:var(--muted);
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.28rem .75rem}
+
+  /* ---------- mode switch ---------- */
+  .switch{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-top:1.4rem;
+    background:var(--panel);border:1px solid var(--line);border-radius:.7rem;padding:.7rem .9rem}
+  .switch p{font-size:.82rem;color:var(--muted);margin:0;max-width:none}
+  .seg{display:inline-flex;background:#0a1120;border:1px solid var(--line);border-radius:.5rem;padding:3px}
+  .seg button{font-family:var(--sans);font-size:.8rem;font-weight:500;color:var(--muted);
+    background:transparent;border:0;border-radius:.35rem;padding:.35rem .95rem;cursor:pointer;transition:.15s}
+  .seg button[aria-pressed="true"]{background:rgba(34,211,238,.14);color:var(--cyan)}
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:3.4rem;scroll-margin-top:1.5rem}
+  h2{font-size:1.35rem;font-weight:650;letter-spacing:-.01em;margin-bottom:.35rem;display:flex;gap:.7rem;align-items:baseline}
+  h2 .num{font-family:var(--mono);font-size:.85rem;color:var(--cyan);font-weight:500}
+  .sub{color:var(--muted);font-size:.93rem;margin-bottom:1.5rem;max-width:78ch}
+  h3{font-size:1rem;font-weight:600;margin:1.9rem 0 .7rem;color:#eef3fa}
+  p{margin-bottom:.9rem;max-width:80ch}
+  p:last-child{margin-bottom:0}
+
+  /* ---------- callouts ---------- */
+  .plain{background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.22);border-left:3px solid var(--cyan);
+    border-radius:.5rem;padding:.95rem 1.15rem;margin:0 0 1.5rem}
+  .plain b{color:var(--cyan);font-weight:600;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    display:block;margin-bottom:.3rem;font-family:var(--mono)}
+  .plain p{margin:0;color:var(--text);font-size:.95rem}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);
+    border-radius:.5rem;padding:.9rem 1.15rem;margin:1.3rem 0;font-size:.92rem;color:var(--muted)}
+  .note p{font-size:.92rem;color:var(--muted)}
+  .note b{color:var(--amber)}
+
+  /* ---------- lists ---------- */
+  ul.clean{list-style:none;margin:0 0 1rem}
+  ul.clean li{position:relative;padding-left:1.35rem;margin-bottom:.55rem;color:var(--muted);font-size:.94rem;max-width:80ch}
+  ul.clean li::before{content:"";position:absolute;left:.35rem;top:.72em;width:5px;height:5px;
+    border-radius:50%;background:var(--line);outline:1px solid var(--line)}
+  ul.clean li b{color:var(--text);font-weight:600}
+
+  ol.steps{list-style:none;counter-reset:s;margin:0 0 1rem}
+  ol.steps li{counter-increment:s;position:relative;padding-left:2.6rem;margin-bottom:1.05rem;
+    color:var(--muted);font-size:.94rem;max-width:80ch}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:.05em;width:1.7rem;height:1.7rem;
+    display:grid;place-items:center;border-radius:50%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--cyan);font-family:var(--mono);font-size:.78rem}
+  ol.steps li b{color:var(--text);font-weight:600}
+
+  /* ---------- code ---------- */
+  code{font-family:var(--mono);font-size:.86em;background:#0a1120;border:1px solid var(--line-soft);
+    border-radius:.3rem;padding:.1em .42em;color:#a9d4e8}
+  .block{font-family:var(--mono);font-size:.82rem;background:#0a1120;border:1px solid var(--line);
+    border-radius:.55rem;padding:1rem 1.15rem;overflow-x:auto;color:#a9d4e8;line-height:1.8;margin:1rem 0;
+    white-space:pre}
+
+  /* ---------- tables ---------- */
+  .tw{overflow-x:auto;margin:1.1rem 0 1.4rem;border:1px solid var(--line);border-radius:.65rem;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:.89rem;min-width:520px}
+  th{text-align:left;font-weight:600;color:#eef3fa;background:var(--panel2);padding:.72rem 1rem;
+    border-bottom:1px solid var(--line);font-size:.8rem;letter-spacing:.03em}
+  td{padding:.72rem 1rem;border-bottom:1px solid var(--line-soft);color:var(--muted);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td b,td strong{color:var(--text);font-weight:600}
+  td.mono,th.mono{font-family:var(--mono);font-size:.82rem;color:#a9d4e8}
+  .yes{color:var(--emerald);font-weight:600}
+  .no{color:var(--rose);font-weight:600}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:1rem;margin:1.2rem 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:.75rem;padding:1.15rem 1.25rem}
+  .card h4{font-size:.94rem;font-weight:600;color:#eef3fa;margin-bottom:.55rem;display:flex;align-items:center;gap:.55rem}
+  .card h4::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cyan);flex:none}
+  .card.c-emerald h4::before{background:var(--emerald)}
+  .card.c-amber h4::before{background:var(--amber)}
+  .card.c-rose h4::before{background:var(--rose)}
+  .card.c-violet h4::before{background:var(--violet)}
+  .card.c-orange h4::before{background:var(--orange)}
+  .card p{font-size:.87rem;color:var(--muted)}
+  .card ul.clean{margin-bottom:0}
+  .card ul.clean li{margin-bottom:.4rem;font-size:.87rem}
+
+  /* ---------- figures ---------- */
+  figure{margin:1.4rem 0 1.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:.85rem;padding:1.35rem;overflow-x:auto}
+  figure svg{width:100%;height:auto;display:block;min-width:720px}
+  figcaption{margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--line-soft);
+    font-size:.83rem;color:var(--dim);text-align:center}
+
+  /* ---------- glossary ---------- */
+  .gloss{display:grid;gap:.7rem}
+  .gloss .row{background:var(--panel);border:1px solid var(--line);border-radius:.6rem;padding:.85rem 1.1rem;
+    display:grid;grid-template-columns:1fr;gap:.25rem}
+  @media(min-width:760px){ .gloss .row{grid-template-columns:200px 1fr;gap:1.2rem;align-items:baseline} }
+  .gloss .term{font-family:var(--mono);font-size:.85rem;color:var(--cyan);font-weight:600}
+  .gloss .desc{font-size:.9rem;color:var(--muted)}
+  .gloss .desc b{color:var(--text);font-weight:600}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding-top:1.4rem;color:var(--dim);font-size:.82rem;
+    display:flex;flex-wrap:wrap;gap:.4rem 1.4rem}
+  footer span{font-family:var(--mono)}
+
+  /* ---------- mode ringkas ---------- */
+  body.ringkas .deep{display:none !important}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="toc" aria-label="Daftar isi">
+    <div class="toc-title">Daftar isi</div>
+    <a href="#ringkasan"><span class="num">00</span>Ringkasan</a>
+    <a href="#platform"><span class="num">01</span>Lapisan platform</a>
+    <a href="#pipeline"><span class="num">02</span>Kode ke container</a>
+    <a href="#vault"><span class="num">03</span>Vault</a>
+    <a href="#routing"><span class="num">04</span>Jalur traffic</a>
+    <a href="#akses"><span class="num">05</span>Kontrol akses</a>
+    <a href="#data"><span class="num">06</span>Data &amp; storage</a>
+    <a href="#log"><span class="num">07</span>Logging</a>
+    <a href="#network" class="deep"><span class="num">08</span>Jaringan Docker</a>
+    <a href="#keamanan"><span class="num">09</span>Keamanan</a>
+    <a href="#glosarium"><span class="num">10</span>Glosarium</a>
+    <a href="#catatan"><span class="num">11</span>Catatan sumber</a>
+  </nav>
+
+  <main class="content">
+
+    <header>
+      <div class="eyebrow"><span class="dot"></span>PT Instrumeta Teknologi Nusantara</div>
+      <h1>Arsitektur Infrastruktur Edunusa</h1>
+      <p class="lede">
+        Dokumen ini menjelaskan bagaimana platform pendidikan digital <code>itn-edunusa</code> berjalan:
+        mulai dari kode yang ditulis developer, sampai menjadi layanan yang dipakai pengguna,
+        termasuk siapa saja yang boleh mengaksesnya dan bagaimana semuanya dipantau.
+      </p>
+      <div class="meta">
+        <span>Docker single-host</span>
+        <span>VM Proxmox</span>
+        <span>Traefik + Kong</span>
+        <span>Vault</span>
+        <span>Vector &rarr; VictoriaLogs &rarr; Grafana</span>
+        <span>Diverifikasi 2026-09-08</span>
+      </div>
+
+      <div class="switch">
+        <p><strong style="color:var(--text)">Cara baca:</strong> pilih tingkat detail yang Anda butuhkan.</p>
+        <div class="seg" role="group" aria-label="Tingkat detail">
+          <button id="btn-ringkas" aria-pressed="false">Ringkas</button>
+          <button id="btn-lengkap" aria-pressed="true">Lengkap</button>
+        </div>
+        <p id="switch-hint">Mode <b style="color:var(--cyan)">Lengkap</b> menampilkan nama teknis, alamat IP, dan konfigurasi.</p>
+      </div>
+    </header>
+
+    <!-- ============ 00 RINGKASAN ============ -->
+    <section id="ringkasan">
+      <h2><span class="num">00</span>Ringkasan</h2>
+      <p class="sub">Lima kalimat yang menjelaskan seluruh sistem. Sisanya hanya memperdalam bagian ini.</p>
+
+      <div class="plain">
+        <b>Analogi singkat</b>
+        <p>
+          Bayangkan sebuah gedung kantor. Proxmox adalah tanahnya, satu mesin virtual adalah gedungnya,
+          dan Docker adalah rak-rak di dalam gedung yang masing-masing berisi satu aplikasi.
+          Traefik adalah resepsionis yang mengarahkan setiap tamu ke ruangan yang benar, Kong adalah loket
+          khusus yang hanya melayani permintaan data, dan Vault adalah brankas kunci yang tidak boleh dibuka
+          sembarang orang.
+        </p>
+      </div>
+
+      <ol class="steps">
+        <li><b>Developer menulis kode</b> dan mendorongnya ke GitHub. Tidak ada yang di-upload manual ke server.</li>
+        <li><b>GitHub Actions membangun aplikasi</b> menjadi <i>image</i>, yaitu paket siap jalan, lalu menyimpannya di GHCR.</li>
+        <li><b>Server menarik image itu</b> dan menjalankannya sebagai container, satu container per layanan per environment.</li>
+        <li><b>Pengguna masuk lewat Traefik.</b> Halaman web dilayani langsung, sedangkan permintaan data lewat Kong dulu.</li>
+        <li><b>Semua yang terjadi tercatat.</b> Log tiap container dikumpulkan Vector, disimpan VictoriaLogs, dan dilihat di Grafana.</li>
+      </ol>
+
+      <div class="grid">
+        <div class="card">
+          <h4>Tiga environment</h4>
+          <p><b>production</b> untuk pengguna nyata, <b>staging</b> untuk uji coba sebelum rilis,
+             <b>development</b> untuk tim internal. Ketiganya terpisah, termasuk database-nya.</p>
+        </div>
+        <div class="card c-emerald">
+          <h4>Satu server, banyak container</h4>
+          <p>Semuanya berjalan di <b>satu mesin virtual</b>. Tidak ada Kubernetes. Pemisahan antar layanan
+             dilakukan lewat container dan jaringan Docker.</p>
+        </div>
+        <div class="card c-rose">
+          <h4>Dua pintu masuk</h4>
+          <p>Publik hanya bisa membuka <b>production dan staging</b>. Sisanya, termasuk semua alat internal,
+             wajib lewat <b>VPN kantor</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 01 PLATFORM ============ -->
+    <section id="platform">
+      <h2><span class="num">01</span>Lapisan platform</h2>
+      <p class="sub">Di mana sebenarnya semua ini berjalan.</p>
+
+      <div class="plain">
+        <b>Bahasa sederhana</b>
+        <p>
+          Server fisiknya tidak dipakai langsung. Di atasnya dijalankan satu komputer virtual bernama
+          <code>edunusa-tools</code>, dan di dalam komputer virtual itulah semua layanan hidup sebagai container.
+          Jadi ada empat lapis: server fisik, komputer virtual, Docker, lalu container.
+        </p>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 1160 300" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram lapisan: Proxmox VE membungkus VM edunusa-tools, yang membungkus Docker Engine, yang membungkus container layanan">
+          <rect x="18" y="16" width="1124" height="266" rx="14" fill="rgba(251,191,36,.05)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="10,5"/>
+          <text x="40" y="46" fill="#fbbf24" font-family="Inter,sans-serif" font-size="15" font-weight="600">Proxmox VE &mdash; hypervisor di server fisik</text>
+
+          <rect x="44" y="62" width="1072" height="200" rx="12" fill="rgba(148,163,184,.05)" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="66" y="90" fill="#e2e8f0" font-family="Inter,sans-serif" font-size="14" font-weight="600">VM edunusa-tools &mdash; Ubuntu 24.04.4 LTS &middot; 32 vCPU &middot; 24 GB RAM</text>
+
+          <rect x="70" y="106" width="1020" height="140" rx="10" fill="rgba(34,211,238,.05)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="92" y="132" fill="#22d3ee" font-family="Inter,sans-serif" font-size="13" font-weight="600">Docker Engine</text>
+
+          <g font-family="Inter,sans-serif" font-size="12" text-anchor="middle">
+            <rect x="94" y="150" width="116" height="74" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.3"/>
+            <text x="152" y="182" fill="#fff">Traefik</text><text x="152" y="200" fill="#94a3b8" font-size="10.5">reverse proxy</text>
+
+            <rect x="222" y="150" width="116" height="74" rx="7" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.3"/>
+            <text x="280" y="182" fill="#fff">Kong</text><text x="280" y="200" fill="#94a3b8" font-size="10.5">API gateway</text>
+
+            <rect x="350" y="150" width="116" height="74" rx="7" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.3"/>
+            <text x="408" y="182" fill="#fff">Frontend</text><text x="408" y="200" fill="#94a3b8" font-size="10.5">&times; 3 environment</text>
+
+            <rect x="478" y="150" width="116" height="74" rx="7" fill="rgba(6,78,59,.5)" stroke="#34d399" stroke-width="1.3"/>
+            <text x="536" y="182" fill="#fff">Backend</text><text x="536" y="200" fill="#94a3b8" font-size="10.5">&times; 3 environment</text>
+
+            <rect x="606" y="150" width="116" height="74" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.3"/>
+            <text x="664" y="182" fill="#fff">Postgres</text><text x="664" y="200" fill="#94a3b8" font-size="10.5">&times; 3 environment</text>
+
+            <rect x="734" y="150" width="116" height="74" rx="7" fill="rgba(76,29,149,.45)" stroke="#a78bfa" stroke-width="1.3"/>
+            <text x="792" y="182" fill="#fff">MinIO</text><text x="792" y="200" fill="#94a3b8" font-size="10.5">penyimpanan file</text>
+
+            <rect x="862" y="150" width="116" height="74" rx="7" fill="rgba(136,19,55,.5)" stroke="#fb7185" stroke-width="1.3"/>
+            <text x="920" y="182" fill="#fff">Vault</text><text x="920" y="200" fill="#94a3b8" font-size="10.5">brankas kunci</text>
+
+            <rect x="990" y="150" width="88" height="74" rx="7" fill="rgba(251,146,60,.32)" stroke="#fb923c" stroke-width="1.3"/>
+            <text x="1034" y="182" fill="#fff">Vector</text><text x="1034" y="200" fill="#94a3b8" font-size="10.5">pencatat log</text>
+          </g>
+        </svg>
+        <figcaption>Empat lapisan, dari server fisik sampai container layanan.</figcaption>
+      </figure>
+
+      <div class="deep">
+        <h3>Spesifikasi mesin virtual</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:180px">Aspek</th><th>Detail</th></tr></thead>
+            <tbody>
+              <tr><td><b>Hostname</b></td><td class="mono">edunusa-tools</td></tr>
+              <tr><td><b>Sistem operasi</b></td><td class="mono">Ubuntu 24.04.4 LTS x86_64 &middot; kernel 6.8.0-136</td></tr>
+              <tr><td><b>Hypervisor</b></td><td class="mono">KVM/QEMU &mdash; Standard PC i440FX + PIIX (pc-i440fx-10.1)</td></tr>
+              <tr><td><b>CPU</b></td><td class="mono">QEMU Virtual 2.5+ &middot; 32 vCPU @ 2.099 GHz</td></tr>
+              <tr><td><b>Memori</b></td><td class="mono">19.930 MiB terpakai dari 24.023 MiB</td></tr>
+              <tr><td><b>Jaringan</b></td><td class="mono">111.221.43.101 (publik/VPN) + bridge Docker 172.17&ndash;172.22</td></tr>
+              <tr><td><b>Lain-lain</b></td><td class="mono">821 paket dpkg &middot; bash 5.2.21 &middot; uptime &plusmn;48 hari</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          <p><b>Konsekuensi:</b> karena semuanya satu mesin virtual, kapasitas RAM adalah batas nyata.
+          Saat ini sekitar 83&nbsp;persen memori sudah terpakai, jadi penambahan layanan baru perlu dihitung dulu.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 PIPELINE ============ -->
+    <section id="pipeline">
+      <h2><span class="num">02</span>Dari kode ke container</h2>
+      <p class="sub">Perjalanan satu perubahan kode sampai berjalan di server.</p>
+
+      <div class="plain">
+        <b>Bahasa sederhana</b>
+        <p>
+          Developer tidak pernah menyentuh server secara langsung. Mereka cukup mengirim kode ke GitHub,
+          lalu robot otomatis yang mengemas kode itu menjadi paket siap pakai, menyimpannya di gudang,
+          dan menyuruh server mengambil serta menjalankannya.
+        </p>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 1160 540" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram alur: developer mendorong kode ke GitHub, GitHub Actions membangun image dan mendorongnya ke GHCR, runner di server menarik image dan menjalankan container, dengan Vault memasok kredensial">
+          <defs>
+            <marker id="ah" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#94a3b8"/>
+            </marker>
+            <marker id="ah-amber" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#fbbf24"/>
+            </marker>
+            <marker id="ah-rose" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#fb7185"/>
+            </marker>
+            <marker id="ah-emerald" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#34d399"/>
+            </marker>
+          </defs>
+
+          <g font-family="Inter,sans-serif">
+            <!-- baris 1 -->
+            <rect x="20" y="70" width="150" height="76" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="95" y="102" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Developer</text>
+            <text x="95" y="123" fill="#94a3b8" font-size="11.5" text-anchor="middle">tulis &amp; commit kode</text>
+
+            <line x1="170" y1="108" x2="220" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/>
+            <text x="197" y="99" fill="#94a3b8" font-size="11" text-anchor="middle">git push</text>
+
+            <rect x="230" y="70" width="170" height="76" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="315" y="102" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">GitHub</text>
+            <text x="315" y="123" fill="#94a3b8" font-size="11.5" text-anchor="middle">repo itn-edunusa-*</text>
+
+            <line x1="400" y1="108" x2="450" y2="108" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ah-amber)"/>
+            <text x="427" y="99" fill="#fbbf24" font-size="11" text-anchor="middle">trigger</text>
+
+            <rect x="460" y="52" width="285" height="112" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="602" y="82" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">GitHub Actions</text>
+            <text x="602" y="104" fill="#fbbf24" font-size="11.5" text-anchor="middle">test &rarr; build image &rarr; push</text>
+            <text x="602" y="124" fill="#94a3b8" font-size="11" text-anchor="middle">template reusable dipakai semua repo</text>
+            <text x="602" y="143" fill="#94a3b8" font-size="11" text-anchor="middle">itn-edunusa-pipeline-templates</text>
+
+            <line x1="745" y1="108" x2="795" y2="108" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ah-amber)"/>
+            <text x="772" y="99" fill="#fbbf24" font-size="11" text-anchor="middle">simpan</text>
+
+            <rect x="805" y="70" width="185" height="76" rx="8" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="897" y="102" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">GHCR</text>
+            <text x="897" y="123" fill="#94a3b8" font-size="11.5" text-anchor="middle">gudang image</text>
+
+            <!-- turun ke runner -->
+            <path d="M 897 146 V 210 H 602 V 271" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ah-amber)"/>
+            <text x="750" y="201" fill="#fbbf24" font-size="11" text-anchor="middle">server menarik image</text>
+
+            <path d="M 505 164 V 271" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/>
+            <text x="515" y="222" fill="#94a3b8" font-size="11">perintah deploy lewat SSH</text>
+
+            <!-- baris 2 -->
+            <rect x="460" y="278" width="285" height="112" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="602" y="308" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Runner di server</text>
+            <text x="602" y="330" fill="#94a3b8" font-size="11.5" text-anchor="middle">self-hosted &middot; be-1..7 &amp; fe-1..7</text>
+            <text x="602" y="350" fill="#94a3b8" font-size="11" text-anchor="middle">docker pull lalu compose up</text>
+            <text x="602" y="369" fill="#fb7185" font-size="11" text-anchor="middle">memakai secret dari Vault</text>
+
+            <line x1="745" y1="334" x2="795" y2="334" stroke="#34d399" stroke-width="1.5" marker-end="url(#ah-emerald)"/>
+            <text x="772" y="325" fill="#34d399" font-size="11" text-anchor="middle">jalankan</text>
+
+            <rect x="805" y="264" width="185" height="140" rx="8" fill="rgba(6,78,59,.35)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="897" y="294" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Container aktif</text>
+            <text x="897" y="318" fill="#94a3b8" font-size="11.5" text-anchor="middle">satu container per</text>
+            <text x="897" y="336" fill="#94a3b8" font-size="11.5" text-anchor="middle">layanan per environment</text>
+            <text x="897" y="362" fill="#34d399" font-size="11" text-anchor="middle">production</text>
+            <text x="897" y="379" fill="#34d399" font-size="11" text-anchor="middle">staging &middot; development</text>
+
+            <!-- vault -->
+            <rect x="230" y="428" width="560" height="88" rx="8" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="510" y="458" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Vault &mdash; sumber tunggal semua kredensial</text>
+            <text x="510" y="481" fill="#fb7185" font-size="11.5" text-anchor="middle">variabel environment &middot; kunci SSH &middot; token &middot; kubeconfig</text>
+            <text x="510" y="501" fill="#94a3b8" font-size="11" text-anchor="middle">tidak ada rahasia yang disimpan di dalam repo</text>
+
+            <path d="M 300 428 V 174" fill="none" stroke="#fb7185" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ah-rose)"/>
+            <text x="312" y="252" fill="#fb7185" font-size="11">login AppRole,</text>
+            <text x="312" y="270" fill="#fb7185" font-size="11">lalu ambil rahasia</text>
+
+            <path d="M 620 428 V 396" fill="none" stroke="#fb7185" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ah-rose)"/>
+            <text x="632" y="419" fill="#fb7185" font-size="11">dipakai saat deploy</text>
+
+            <rect x="805" y="428" width="185" height="88" rx="8" fill="rgba(148,163,184,.07)" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5,4"/>
+            <text x="897" y="456" fill="#e2e8f0" font-size="12.5" font-weight="600" text-anchor="middle">Rollback</text>
+            <text x="897" y="478" fill="#94a3b8" font-size="11" text-anchor="middle">deploy ulang tag image</text>
+            <text x="897" y="495" fill="#94a3b8" font-size="11" text-anchor="middle">lama, tanpa build ulang</text>
+          </g>
+        </svg>
+        <figcaption>Alur build dan deploy. Garis merah putus-putus adalah pengambilan kredensial dari Vault.</figcaption>
+      </figure>
+
+      <h3>Tahapan yang dijalankan pipeline</h3>
+      <ol class="steps">
+        <li><b>Checkout</b> &mdash; kode diambil dari repo yang memicu pipeline.</li>
+        <li><b>Test</b> &mdash; pemeriksaan otomatis dijalankan saat Pull Request, sebelum kode digabung.</li>
+        <li><b>Build image</b> &mdash; kode dikemas menjadi image dengan penanda commit, sehingga setiap build bisa dilacak asal-usulnya.</li>
+        <li><b>Push ke GHCR</b> &mdash; image disimpan di registry. Inilah yang membuat rollback murah, karena versi lama masih tersimpan.</li>
+        <li><b>Deploy</b> &mdash; server diperintahkan lewat SSH untuk menarik image dan menjalankan ulang container.</li>
+      </ol>
+
+      <div class="deep">
+        <h3>Detail teknis pipeline</h3>
+        <p>Repo <code>itn-edunusa-pipeline-templates</code> adalah satu-satunya sumber kebenaran untuk semua pipeline. Strukturnya berlapis:</p>
+        <div class="block">consumer (workflow di tiap repo)
+   &rarr; runtime-specific service (nodejs / golang / hono / java)
+      &rarr; base service</div>
+        <p>Penamaan image mengikuti pola berikut:</p>
+        <div class="block">ghcr.io/pt-instrumeta-teknologi-nusantara/itn-edunusa-&lt;service&gt;-&lt;fe|be&gt;:&lt;environment&gt;-&lt;commit&gt;
+
+contoh nyata:
+  itn-edunusa-cbt-fe:production-b692530
+  itn-edunusa-be:development-beeef6b</div>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:230px">Komponen</th><th>Peran</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">*.pr.yml</td><td>Workflow CI yang berjalan pada Pull Request.</td></tr>
+              <tr><td class="mono">deploy-single-host</td><td>Action yang menjalankan <code>docker pull</code> dan <code>compose up</code> di server lewat SSH.</td></tr>
+              <tr><td class="mono">rollback-to-tag</td><td>Workflow untuk kembali ke tag image lama tanpa membangun ulang.</td></tr>
+              <tr><td class="mono">Runner self-hosted</td><td>Tujuh runner backend dan tujuh runner frontend, berjalan di server yang sama.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 VAULT ============ -->
+    <section id="vault">
+      <h2><span class="num">03</span>Vault &mdash; pengelolaan rahasia</h2>
+      <p class="sub">Password, kunci, dan token disimpan di satu tempat, bukan tersebar di kode.</p>
+
+      <div class="plain">
+        <b>Bahasa sederhana</b>
+        <p>
+          Vault adalah brankas terpusat. Pipeline tidak menyimpan password di dalam kode atau di GitHub.
+          Setiap kali butuh, pipeline memperkenalkan diri ke Vault dengan sepasang identitas, lalu meminjam
+          rahasia yang diperlukan hanya untuk sekali proses. Brankasnya sendiri hanya bisa dibuka dari
+          jaringan kantor atau VPN.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card c-rose">
+          <h4>Apa yang disimpan</h4>
+          <ul class="clean">
+            <li>Variabel environment untuk tiap layanan</li>
+            <li>Kunci privat SSH untuk deploy</li>
+            <li>Token dan API key</li>
+            <li>Kubeconfig</li>
+          </ul>
+        </div>
+        <div class="card c-rose">
+          <h4>Cara pipeline masuk</h4>
+          <p>Memakai <b>AppRole</b>, yaitu pasangan <code>role_id</code> dan <code>secret_id</code>
+             yang ditukar menjadi token sementara. Nilainya di-<i>mask</i> agar tidak pernah muncul di log build.</p>
+        </div>
+        <div class="card c-rose">
+          <h4>Siapa yang boleh membuka</h4>
+          <p>Hanya dari <b>VPN kantor</b>. Dibatasi dua lapis sekaligus: firewall sistem operasi
+             dan daftar IP di Traefik.</p>
+        </div>
+      </div>
+
+      <div class="deep">
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:180px">Aspek</th><th>Detail</th></tr></thead>
+            <tbody>
+              <tr><td><b>Alamat</b></td><td class="mono">tools-vault.edunusa.co.id</td></tr>
+              <tr><td><b>Entrypoint</b></td><td class="mono">websecure &middot; sertifikat mytlschallenge</td></tr>
+              <tr><td><b>Jaringan</b></td><td class="mono">traefik-internal</td></tr>
+              <tr><td><b>Middleware</b></td><td class="mono">edunusa-internal-allow@file</td></tr>
+              <tr><td><b>Allowlist IP</b></td><td class="mono">39.194.0.0/10 (kantor) + 111.221.43.104/32 (OpenVPN)</td></tr>
+              <tr><td><b>Autentikasi</b></td><td class="mono">AppRole (role_id + secret_id), nilai di-mask</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Action yang berhubungan dengan Vault</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:250px">Action</th><th>Fungsi</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">vault-auth</td><td>Login AppRole dan menghasilkan token Vault sementara.</td></tr>
+              <tr><td class="mono">fetch-vault-fields</td><td>Membaca secret per layanan dari KV store, dipakai sebagai variabel build dan deploy.</td></tr>
+              <tr><td class="mono">resolve-ssh-credentials</td><td>Mengambil kunci SSH dari Vault, bukan dari GitHub Secrets.</td></tr>
+              <tr><td class="mono">resolve-kubeconfig</td><td>Mengambil kubeconfig dari Vault.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 04 ROUTING ============ -->
+    <section id="routing">
+      <h2><span class="num">04</span>Jalur traffic saat aplikasi dipakai</h2>
+      <p class="sub">Ke mana permintaan pengguna mengalir setelah semua container berjalan.</p>
+
+      <div class="plain">
+        <b>Bahasa sederhana</b>
+        <p>
+          Semua permintaan masuk lewat satu pintu bernama Traefik. Kalau yang diminta adalah halaman web,
+          Traefik langsung menyerahkannya ke container frontend. Kalau yang diminta adalah data, permintaan
+          itu dilewatkan dulu ke Kong sebagai loket pemeriksaan, baru diteruskan ke backend.
+        </p>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 1160 700" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram routing: pengguna publik dan tim VPN masuk lewat Traefik. Frontend dilayani langsung, backend lewat Kong, alat internal dan database berada di zona yang wajib VPN">
+          <defs>
+            <marker id="b-ah" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#94a3b8"/></marker>
+            <marker id="b-cy" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#22d3ee"/></marker>
+            <marker id="b-am" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#fbbf24"/></marker>
+            <marker id="b-ro" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#fb7185"/></marker>
+            <marker id="b-vi" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#a78bfa"/></marker>
+          </defs>
+
+          <g font-family="Inter,sans-serif">
+            <!-- zona internal -->
+            <rect x="545" y="444" width="608" height="200" rx="12" fill="rgba(251,113,133,.04)" stroke="#fb7185" stroke-width="1.4" stroke-dasharray="8,5"/>
+            <text x="562" y="466" fill="#fb7185" font-size="12" font-weight="600">Zona internal &mdash; hanya bisa dibuka dari VPN kantor</text>
+
+            <!-- pengguna publik -->
+            <rect x="20" y="110" width="155" height="86" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="97" y="145" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Pengguna publik</text>
+            <text x="97" y="167" fill="#94a3b8" font-size="11" text-anchor="middle">siswa, guru, umum</text>
+            <line x1="175" y1="153" x2="240" y2="153" stroke="#22d3ee" stroke-width="1.6" marker-end="url(#b-cy)"/>
+            <text x="207" y="144" fill="#22d3ee" font-size="10.5" text-anchor="middle">HTTPS</text>
+
+            <!-- tim internal -->
+            <rect x="20" y="470" width="155" height="86" rx="8" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="97" y="505" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Tim internal</text>
+            <text x="97" y="527" fill="#94a3b8" font-size="11" text-anchor="middle">dari kantor / OpenVPN</text>
+            <line x1="97" y1="470" x2="97" y2="424" stroke="#fb7185" stroke-width="1.6" marker-end="url(#b-ro)"/>
+
+            <!-- gerbang -->
+            <rect x="15" y="352" width="165" height="70" rx="8" fill="rgba(136,19,55,.4)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="97" y="380" fill="#fff" font-size="12.5" font-weight="600" text-anchor="middle">Gerbang akses</text>
+            <text x="97" y="401" fill="#fb7185" font-size="10.5" text-anchor="middle">firewall + daftar IP</text>
+            <path d="M 97 352 V 215 H 234" fill="none" stroke="#fb7185" stroke-width="1.6" marker-end="url(#b-ro)"/>
+            <text x="108" y="290" fill="#fb7185" font-size="10.5">hanya IP</text>
+            <text x="108" y="306" fill="#fb7185" font-size="10.5">terdaftar</text>
+
+            <!-- traefik -->
+            <rect x="245" y="100" width="215" height="140" rx="9" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.6"/>
+            <text x="352" y="132" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Traefik</text>
+            <text x="352" y="156" fill="#fbbf24" font-size="11" text-anchor="middle">pintu masuk tunggal, port 443</text>
+            <text x="352" y="177" fill="#94a3b8" font-size="11" text-anchor="middle">memasang sertifikat TLS</text>
+            <text x="352" y="196" fill="#94a3b8" font-size="11" text-anchor="middle">otomatis dari Let&rsquo;s Encrypt</text>
+            <text x="352" y="222" fill="#94a3b8" font-size="11" text-anchor="middle">mengarahkan ke container tujuan</text>
+
+            <!-- ke FE -->
+            <line x1="460" y1="122" x2="552" y2="122" stroke="#22d3ee" stroke-width="1.6" marker-end="url(#b-cy)"/>
+            <text x="506" y="113" fill="#22d3ee" font-size="10.5" text-anchor="middle">halaman web</text>
+
+            <rect x="560" y="60" width="310" height="150" rx="9" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.6"/>
+            <text x="715" y="92" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Frontend</text>
+            <text x="715" y="115" fill="#22d3ee" font-size="11" text-anchor="middle">React &middot; Vue &middot; Next.js</text>
+            <text x="715" y="135" fill="#94a3b8" font-size="11" text-anchor="middle">cbt &middot; sso &middot; spp &middot; rapor</text>
+            <text x="715" y="162" fill="#34d399" font-size="11" text-anchor="middle">production &amp; staging: terbuka untuk publik</text>
+            <text x="715" y="182" fill="#fb7185" font-size="11" text-anchor="middle">development: hanya dari VPN</text>
+            <text x="715" y="200" fill="#94a3b8" font-size="10.5" text-anchor="middle">tidak melewati Kong</text>
+
+            <!-- ke Kong -->
+            <path d="M 460 190 H 508 V 332 H 552" fill="none" stroke="#fbbf24" stroke-width="1.6" marker-end="url(#b-am)"/>
+            <text x="516" y="262" fill="#fbbf24" font-size="10.5">permintaan</text>
+            <text x="516" y="278" fill="#fbbf24" font-size="10.5">data / API</text>
+
+            <rect x="560" y="270" width="310" height="128" rx="9" fill="rgba(120,53,15,.35)" stroke="#fbbf24" stroke-width="1.6"/>
+            <text x="715" y="302" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Kong API Gateway</text>
+            <text x="715" y="325" fill="#fbbf24" font-size="11" text-anchor="middle">satu instans terpisah per environment</text>
+            <text x="715" y="345" fill="#94a3b8" font-size="11" text-anchor="middle">memeriksa autentikasi dan batas laju</text>
+            <g font-size="10.5" text-anchor="middle">
+              <rect x="586" y="358" width="86" height="24" rx="12" fill="rgba(52,211,153,.14)" stroke="#34d399" stroke-width="1"/>
+              <text x="629" y="374" fill="#34d399">production</text>
+              <rect x="682" y="358" width="76" height="24" rx="12" fill="rgba(251,191,36,.14)" stroke="#fbbf24" stroke-width="1"/>
+              <text x="720" y="374" fill="#fbbf24">staging</text>
+              <rect x="768" y="358" width="96" height="24" rx="12" fill="rgba(251,113,133,.14)" stroke="#fb7185" stroke-width="1"/>
+              <text x="816" y="374" fill="#fb7185">development</text>
+            </g>
+
+            <line x1="870" y1="332" x2="924" y2="332" stroke="#34d399" stroke-width="1.6" marker-end="url(#b-cy)"/>
+            <text x="897" y="323" fill="#34d399" font-size="10.5" text-anchor="middle">teruskan</text>
+
+            <rect x="930" y="270" width="210" height="128" rx="9" fill="rgba(6,78,59,.45)" stroke="#34d399" stroke-width="1.6"/>
+            <text x="1035" y="302" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Backend</text>
+            <text x="1035" y="324" fill="#34d399" font-size="11" text-anchor="middle">Node.js &middot; Golang</text>
+            <text x="1035" y="342" fill="#34d399" font-size="11" text-anchor="middle">Hono &middot; Java</text>
+            <text x="1035" y="364" fill="#94a3b8" font-size="10.5" text-anchor="middle">wapi &middot; simultan</text>
+            <text x="1035" y="381" fill="#94a3b8" font-size="10.5" text-anchor="middle">pelita &middot; presensi</text>
+
+            <!-- traefik ke tools internal -->
+            <path d="M 352 240 V 553 H 554" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#b-ro)"/>
+            <text x="362" y="430" fill="#fb7185" font-size="10.5">alat internal</text>
+            <text x="362" y="446" fill="#fb7185" font-size="10.5">&amp; dashboard</text>
+
+            <rect x="562" y="478" width="300" height="150" rx="9" fill="rgba(136,19,55,.35)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="712" y="508" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Alat internal</text>
+            <text x="712" y="532" fill="#94a3b8" font-size="11" text-anchor="middle">Grafana &middot; Vault &middot; pgAdmin4</text>
+            <text x="712" y="551" fill="#94a3b8" font-size="11" text-anchor="middle">Node-RED &middot; EMQX &middot; OpenWA</text>
+            <text x="712" y="570" fill="#94a3b8" font-size="11" text-anchor="middle">Redis &middot; Kong tools</text>
+            <text x="712" y="598" fill="#fb7185" font-size="10.5" text-anchor="middle">jaringan traefik-internal</text>
+            <text x="712" y="615" fill="#fb7185" font-size="10.5" text-anchor="middle">tertutup dari internet publik</text>
+
+            <!-- BE ke data -->
+            <path d="M 1035 398 V 474" fill="none" stroke="#a78bfa" stroke-width="1.6" marker-end="url(#b-vi)"/>
+            <text x="1045" y="428" fill="#a78bfa" font-size="10.5">baca &amp; tulis</text>
+            <text x="1045" y="444" fill="#94a3b8" font-size="10.5">data</text>
+
+            <rect x="888" y="478" width="250" height="150" rx="9" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="1013" y="508" fill="#fff" font-size="13.5" font-weight="600" text-anchor="middle">Data &amp; penyimpanan</text>
+            <text x="1013" y="532" fill="#94a3b8" font-size="11" text-anchor="middle">PostgreSQL 18 &times; 3 environment</text>
+            <text x="1013" y="551" fill="#94a3b8" font-size="11" text-anchor="middle">MinIO untuk berkas</text>
+            <text x="1013" y="578" fill="#a78bfa" font-size="10.5" text-anchor="middle">koneksi antar container tidak</text>
+            <text x="1013" y="595" fill="#a78bfa" font-size="10.5" text-anchor="middle">dibatasi daftar IP</text>
+            <text x="1013" y="615" fill="#fb7185" font-size="10.5" text-anchor="middle">akses manusia tetap wajib VPN</text>
+          </g>
+        </svg>
+        <figcaption>Frontend dilayani langsung oleh Traefik. Backend selalu melewati Kong. Zona bergaris merah hanya terbuka dari VPN.</figcaption>
+      </figure>
+
+      <div class="grid">
+        <div class="card">
+          <h4>Frontend: langsung dari Traefik</h4>
+          <p>Setiap container frontend membawa aturan domainnya sendiri, jadi Traefik tahu container mana yang
+             harus melayani sebuah alamat. Frontend <b>tidak</b> melewati Kong.</p>
+        </div>
+        <div class="card c-amber">
+          <h4>Backend: wajib lewat Kong</h4>
+          <p>Container backend sengaja tidak diberi aturan domain di Traefik. Semua akses API melewati Kong,
+             yang menangani autentikasi, pembatasan laju, dan perutean.</p>
+        </div>
+        <div class="card c-emerald">
+          <h4>Kong terpisah per environment</h4>
+          <p>Ada tiga instans Kong, satu untuk production, staging, dan development. Perubahan aturan
+             di satu environment tidak menyentuh yang lain.</p>
+        </div>
+      </div>
+
+      <div class="deep">
+        <h3>Bukti konfigurasi</h3>
+        <p>Label pada container frontend development, yang menegaskan pembatasan berbasis daftar IP:</p>
+        <div class="block">traefik.http.routers.itn-edunusa-cbt-fe-development-ctr.rule
+    = Host(&#96;development-cbt.edunusa.co.id&#96;)
+
+traefik.http.routers.itn-edunusa-cbt-fe-development-ctr.middlewares
+    = edunusa-internal-allow@file</div>
+        <p>Container backend menonaktifkan Traefik sepenuhnya lewat <code>traefik.enable=false</code>,
+           dan tiap gateway dinamai <code>kong-gateway-{production|staging|development}</code>.</p>
+      </div>
+    </section>
+
+    <!-- ============ 05 AKSES ============ -->
+    <section id="akses">
+      <h2><span class="num">05</span>Siapa boleh mengakses apa</h2>
+      <p class="sub">Satu tabel yang menjawab pertanyaan paling sering muncul.</p>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:220px">Komponen</th>
+              <th style="width:150px">Dari internet</th>
+              <th style="width:150px">Dari VPN kantor</th>
+              <th>Catatan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Frontend production</b></td><td class="yes">Bisa</td><td class="yes">Bisa</td><td>Tanpa pembatasan IP.</td></tr>
+            <tr><td><b>Frontend staging</b></td><td class="yes">Bisa</td><td class="yes">Bisa</td><td>Tanpa pembatasan IP.</td></tr>
+            <tr><td><b>Frontend development</b></td><td class="no">Tidak</td><td class="yes">Bisa</td><td>Dibatasi middleware daftar IP.</td></tr>
+            <tr><td><b>API backend</b></td><td>Lewat Kong</td><td>Lewat Kong</td><td>Container backend tidak punya rute Traefik sendiri.</td></tr>
+            <tr><td><b>Vault</b></td><td class="no">Tidak</td><td class="yes">Bisa</td><td>Dibatasi firewall dan daftar IP sekaligus.</td></tr>
+            <tr><td><b>Grafana</b></td><td class="no">Tidak</td><td class="yes">Bisa</td><td>Dashboard log, port 5000.</td></tr>
+            <tr><td><b>PostgreSQL</b></td><td class="no">Tidak</td><td class="yes">Bisa</td><td>Untuk operator. Backend mengaksesnya lewat jaringan Docker.</td></tr>
+            <tr><td><b>MinIO, pgAdmin4, Node-RED, EMQX, OpenWA, Redis</b></td><td class="no">Tidak</td><td class="yes">Bisa</td><td>Semua berada di jaringan <code>traefik-internal</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <p><b>Perbedaan penting:</b> pembatasan daftar IP berlaku untuk <b>akses manusia dari luar</b>.
+        Komunikasi antar container di dalam server, misalnya backend membaca database,
+        berjalan di jaringan Docker internal dan tidak melewati pembatasan itu.</p>
+      </div>
+
+      <div class="deep">
+        <p>Dua lapis pembatasan bekerja bersamaan:</p>
+        <ul class="clean">
+          <li><b>UFW</b> &mdash; firewall di tingkat sistem operasi, berlaku sebelum permintaan sampai ke container.</li>
+          <li><b>Middleware Traefik</b> <code>edunusa-internal-allow@file</code> &mdash; daftar IP
+              <code>39.194.0.0/10</code> (kantor) dan <code>111.221.43.104/32</code> (OpenVPN).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 06 DATA ============ -->
+    <section id="data">
+      <h2><span class="num">06</span>Data &amp; penyimpanan</h2>
+      <p class="sub">Di mana data aplikasi disimpan.</p>
+
+      <div class="grid">
+        <div class="card c-violet">
+          <h4>PostgreSQL 18</h4>
+          <p>Tiga instans terpisah, satu per environment. Data production tidak bercampur dengan staging
+             maupun development.</p>
+          <ul class="clean deep">
+            <li><code>postgresql-database-production</code></li>
+            <li><code>postgresql-database-staging</code></li>
+            <li><code>postgresql-database-development</code></li>
+          </ul>
+        </div>
+        <div class="card c-violet">
+          <h4>MinIO</h4>
+          <p>Penyimpanan berkas dengan antarmuka yang kompatibel dengan Amazon S3. Bucket dipisah per
+             environment, salah satunya dipakai untuk menyimpan media OpenWA.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 07 LOGGING ============ -->
+    <section id="log">
+      <h2><span class="num">07</span>Pencatatan &amp; pemantauan</h2>
+      <p class="sub">Bagaimana tim tahu ada yang bermasalah, dan di layanan mana.</p>
+
+      <div class="plain">
+        <b>Bahasa sederhana</b>
+        <p>
+          Setiap container terus mencetak catatan tentang apa yang sedang dikerjakannya. Vector mengumpulkan
+          semua catatan itu dan memberinya label, misalnya berasal dari environment apa dan layanan mana.
+          VictoriaLogs menyimpannya, lalu Grafana menampilkannya sebagai dashboard yang bisa dicari.
+        </p>
+      </div>
+
+      <figure>
+        <svg viewBox="0 0 1160 330" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Diagram logging: container dan agen di server lain mengirim log ke Vector, Vector mengirim ke VictoriaLogs, Grafana menampilkannya">
+          <defs>
+            <marker id="c-or" markerWidth="9" markerHeight="7" refX="8.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 9 3.5, 0 7" fill="#fb923c"/></marker>
+          </defs>
+          <g font-family="Inter,sans-serif">
+            <rect x="20" y="60" width="230" height="110" rx="9" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="135" y="94" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Semua container</text>
+            <text x="135" y="117" fill="#94a3b8" font-size="11" text-anchor="middle">frontend, backend, database,</text>
+            <text x="135" y="135" fill="#94a3b8" font-size="11" text-anchor="middle">Traefik, Kong, Vault</text>
+            <text x="135" y="156" fill="#fb923c" font-size="10.5" text-anchor="middle">keluaran layar tiap container</text>
+
+            <line x1="250" y1="115" x2="334" y2="115" stroke="#fb923c" stroke-width="1.6" marker-end="url(#c-or)"/>
+            <text x="292" y="106" fill="#fb923c" font-size="10.5" text-anchor="middle">docker socket</text>
+
+            <rect x="20" y="212" width="230" height="90" rx="9" fill="rgba(251,146,60,.22)" stroke="#fb923c" stroke-width="1.4"/>
+            <text x="135" y="244" fill="#fff" font-size="13" font-weight="600" text-anchor="middle">Agen di server lain</text>
+            <text x="135" y="266" fill="#94a3b8" font-size="11" text-anchor="middle">Vector agent</text>
+            <text x="135" y="286" fill="#fb923c" font-size="10.5" text-anchor="middle">kirim lewat HTTP</text>
+
+            <path d="M 250 257 H 296 V 200 H 334" fill="none" stroke="#fb923c" stroke-width="1.6" marker-end="url(#c-or)"/>
+            <text x="304" y="248" fill="#fb923c" font-size="10.5">port 8687</text>
+
+            <rect x="340" y="70" width="260" height="170" rx="9" fill="rgba(251,146,60,.28)" stroke="#fb923c" stroke-width="1.6"/>
+            <text x="470" y="104" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Vector</text>
+            <text x="470" y="128" fill="#fb923c" font-size="11" text-anchor="middle">mengumpulkan &amp; memberi label</text>
+            <text x="470" y="152" fill="#94a3b8" font-size="11" text-anchor="middle">label: environment, jenis log,</text>
+            <text x="470" y="170" fill="#94a3b8" font-size="11" text-anchor="middle">nama layanan, asal server</text>
+            <text x="470" y="196" fill="#94a3b8" font-size="10.5" text-anchor="middle">membaca format JSON bila ada,</text>
+            <text x="470" y="213" fill="#94a3b8" font-size="10.5" text-anchor="middle">selebihnya teks biasa</text>
+
+            <line x1="600" y1="155" x2="664" y2="155" stroke="#fb923c" stroke-width="1.6" marker-end="url(#c-or)"/>
+            <text x="632" y="146" fill="#fb923c" font-size="10.5" text-anchor="middle">simpan</text>
+
+            <rect x="670" y="70" width="230" height="170" rx="9" fill="rgba(251,146,60,.28)" stroke="#fb923c" stroke-width="1.6"/>
+            <text x="785" y="104" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">VictoriaLogs</text>
+            <text x="785" y="128" fill="#fb923c" font-size="11" text-anchor="middle">gudang penyimpanan log</text>
+            <text x="785" y="155" fill="#94a3b8" font-size="11" text-anchor="middle">log diindeks agar bisa</text>
+            <text x="785" y="173" fill="#94a3b8" font-size="11" text-anchor="middle">dicari per environment,</text>
+            <text x="785" y="191" fill="#94a3b8" font-size="11" text-anchor="middle">layanan, dan jenis log</text>
+            <text x="785" y="216" fill="#94a3b8" font-size="10.5" text-anchor="middle">versi 1.51</text>
+
+            <line x1="900" y1="155" x2="954" y2="155" stroke="#fb923c" stroke-width="1.6" marker-end="url(#c-or)"/>
+            <text x="927" y="146" fill="#fb923c" font-size="10.5" text-anchor="middle">query</text>
+
+            <rect x="960" y="70" width="180" height="170" rx="9" fill="rgba(148,163,184,.09)" stroke="#94a3b8" stroke-width="1.4"/>
+            <text x="1050" y="104" fill="#fff" font-size="14" font-weight="600" text-anchor="middle">Grafana</text>
+            <text x="1050" y="128" fill="#94a3b8" font-size="11" text-anchor="middle">dashboard log</text>
+            <text x="1050" y="152" fill="#94a3b8" font-size="11" text-anchor="middle">aplikasi &amp; infrastruktur,</text>
+            <text x="1050" y="170" fill="#94a3b8" font-size="11" text-anchor="middle">dipisah per environment</text>
+            <text x="1050" y="200" fill="#fb7185" font-size="10.5" text-anchor="middle">hanya dari VPN</text>
+          </g>
+        </svg>
+        <figcaption>Log mengalir satu arah, dari container sampai ke dashboard.</figcaption>
+      </figure>
+
+      <div class="deep">
+        <h3>Detail konfigurasi logging</h3>
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:190px">Tahap</th><th>Konfigurasi</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><b>Sumber 1</b></td>
+                <td>Docker socket <code>unix:///var/run/docker.sock</code>, menangkap stdout dan stderr semua container.
+                    Dikecualikan: <code>portainer</code>, <code>hermes</code>, <code>omniroute</code>.</td>
+              </tr>
+              <tr>
+                <td><b>Sumber 2</b></td>
+                <td>HTTP listener pada port <code>8687</code>, menerima kiriman dari Vector agent di server lain.</td>
+              </tr>
+              <tr>
+                <td><b>Pelabelan</b></td>
+                <td><code>environment</code> diturunkan dari akhiran nama container.
+                    <code>log_type</code> memisahkan log aplikasi dari log infrastruktur seperti Postgres, Redis, Vault, MinIO, Kong, dan Traefik.
+                    <code>source_server</code> menandai asal server.</td>
+              </tr>
+              <tr>
+                <td><b>Pengiriman</b></td>
+                <td><code>http://victorialogs:9428/insert/elasticsearch/</code> dengan mode <code>bulk</code>.</td>
+              </tr>
+              <tr>
+                <td><b>Stream field terindeks</b></td>
+                <td><code>environment</code>, <code>service</code>, <code>log_type</code>, <code>source_server</code>.</td>
+              </tr>
+              <tr>
+                <td><b>Visualisasi</b></td>
+                <td>Grafana pada port <code>5000</code>, dengan VictoriaLogs sebagai datasource.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 08 NETWORK ============ -->
+    <section id="network" class="deep">
+      <h2><span class="num">08</span>Jaringan Docker</h2>
+      <p class="sub">Container dipisahkan ke beberapa jaringan agar akses tidak saling bocor.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th style="width:200px" class="mono">Nama jaringan</th><th>Fungsi</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">bridge</td><td>Jaringan bawaan Docker.</td></tr>
+            <tr><td class="mono">traefik</td><td>Container yang dirutekan oleh Traefik, baik publik maupun internal.</td></tr>
+            <tr><td class="mono">traefik-external</td><td>Tempat frontend, backend, dan Kong terhubung untuk menerima rute Traefik.</td></tr>
+            <tr><td class="mono">traefik-internal</td><td>Alat internal dan database. Hanya terbuka dari VPN, dengan tambahan daftar IP.</td></tr>
+            <tr><td class="mono">kong-*</td><td>Jaringan gateway per environment untuk backend.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 09 KEAMANAN ============ -->
+    <section id="keamanan">
+      <h2><span class="num">09</span>Ringkasan keamanan</h2>
+      <p class="sub">Tujuh keputusan yang membentuk postur keamanan sistem ini.</p>
+
+      <div class="grid">
+        <div class="card c-rose">
+          <h4>Permukaan publik sengaja sempit</h4>
+          <p>Dari internet, hanya frontend production dan staging yang terbuka. Semua sisanya tertutup.</p>
+        </div>
+        <div class="card c-rose">
+          <h4>Pembatasan berlapis dua</h4>
+          <p>Firewall sistem operasi dan daftar IP di Traefik bekerja bersamaan.
+             Satu lapis gagal, lapis lain masih menahan.</p>
+        </div>
+        <div class="card c-rose">
+          <h4>Rahasia terpusat</h4>
+          <p>Semua kredensial hanya ada di Vault, tidak di repo dan tidak di GitHub Secrets.
+             Nilainya di-mask agar tidak bocor lewat log build.</p>
+        </div>
+        <div class="card c-amber">
+          <h4>Image hanya dari CI</h4>
+          <p>Container hanya boleh berjalan dari image yang dibangun pipeline dan tersimpan di GHCR.
+             Tidak ada build manual di server.</p>
+        </div>
+        <div class="card c-amber">
+          <h4>Enkripsi otomatis</h4>
+          <p>Semua alamat <code>*.edunusa.co.id</code> memakai TLS yang diperbarui Traefik secara otomatis.</p>
+        </div>
+        <div class="card c-emerald">
+          <h4>Pemulihan cepat</h4>
+          <p>Kalau rilis bermasalah, tim cukup menjalankan rollback ke tag image sebelumnya.
+             Tidak perlu build ulang, jadi waktu pemulihan singkat.</p>
+        </div>
+        <div class="card c-violet">
+          <h4>Environment terisolasi</h4>
+          <p>Frontend, backend, gateway, dan database dipisah per environment,
+             sehingga percobaan di development tidak menyentuh data production.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 10 GLOSARIUM ============ -->
+    <section id="glosarium">
+      <h2><span class="num">10</span>Glosarium</h2>
+      <p class="sub">Istilah yang muncul di dokumen ini, dijelaskan tanpa jargon.</p>
+
+      <div class="gloss">
+        <div class="row"><div class="term">Container</div><div class="desc">Satu aplikasi beserta seluruh kebutuhannya, dibungkus agar bisa dijalankan di mana saja dengan hasil yang sama. <b>Analogi:</b> kotak makan siap saji.</div></div>
+        <div class="row"><div class="term">Image</div><div class="desc">Cetakan yang dipakai untuk membuat container. Satu image bisa dijalankan berkali-kali. <b>Analogi:</b> resep beku yang tinggal dipanaskan.</div></div>
+        <div class="row"><div class="term">Registry / GHCR</div><div class="desc">Gudang tempat image disimpan. GHCR adalah gudang milik GitHub yang dipakai di sini.</div></div>
+        <div class="row"><div class="term">CI/CD</div><div class="desc">Proses otomatis yang menguji, mengemas, dan mengirim kode ke server tanpa langkah manual.</div></div>
+        <div class="row"><div class="term">Runner</div><div class="desc">Program di server yang menerima dan menjalankan perintah dari GitHub Actions.</div></div>
+        <div class="row"><div class="term">Reverse proxy</div><div class="desc">Perantara yang menerima semua permintaan dari luar dan meneruskannya ke layanan yang tepat. Di sini perannya dipegang Traefik.</div></div>
+        <div class="row"><div class="term">API gateway</div><div class="desc">Pintu khusus untuk permintaan data, yang bisa memeriksa izin dan membatasi jumlah permintaan. Di sini perannya dipegang Kong.</div></div>
+        <div class="row"><div class="term">Middleware</div><div class="desc">Aturan tambahan yang dijalankan sebelum permintaan diteruskan, misalnya memeriksa apakah IP pengirim terdaftar.</div></div>
+        <div class="row"><div class="term">Vault</div><div class="desc">Brankas digital untuk password, kunci, dan token, dengan pencatatan siapa mengambil apa.</div></div>
+        <div class="row"><div class="term">AppRole</div><div class="desc">Cara sebuah program membuktikan identitasnya ke Vault, memakai sepasang identitas dan bukan password manusia.</div></div>
+        <div class="row"><div class="term">Environment</div><div class="desc">Salinan sistem yang terpisah. <b>Production</b> dipakai pengguna nyata, <b>staging</b> untuk uji akhir, <b>development</b> untuk tim.</div></div>
+        <div class="row"><div class="term">VPN</div><div class="desc">Terowongan terenkripsi yang membuat perangkat dari luar seolah berada di dalam jaringan kantor.</div></div>
+        <div class="row"><div class="term">Firewall / UFW</div><div class="desc">Penyaring yang memutuskan koneksi mana yang boleh masuk ke server, bekerja sebelum permintaan sampai ke container.</div></div>
+        <div class="row"><div class="term">TLS</div><div class="desc">Enkripsi yang membuat alamat diawali <code>https</code>. Sertifikatnya diambil dan diperbarui otomatis oleh Traefik.</div></div>
+        <div class="row"><div class="term">Rollback</div><div class="desc">Kembali ke versi aplikasi sebelumnya yang sudah terbukti aman.</div></div>
+        <div class="row"><div class="term">Log</div><div class="desc">Catatan aktivitas yang dihasilkan setiap layanan, dipakai untuk menelusuri masalah.</div></div>
+        <div class="row"><div class="term">MinIO / S3</div><div class="desc">Penyimpanan berkas seperti gambar dan dokumen, memakai cara kerja yang sama dengan layanan S3 Amazon.</div></div>
+        <div class="row"><div class="term">Proxmox / VM</div><div class="desc">Perangkat lunak yang membagi satu server fisik menjadi beberapa komputer virtual yang saling terpisah.</div></div>
+      </div>
+    </section>
+
+    <!-- ============ 11 CATATAN ============ -->
+    <section id="catatan">
+      <h2><span class="num">11</span>Catatan sumber</h2>
+      <p class="sub">Dari mana isi dokumen ini berasal, dan apa yang belum terverifikasi.</p>
+
+      <h3>Sumber kebenaran</h3>
+      <ul class="clean">
+        <li>Kondisi aktual server, diambil pada <b>8 September 2026</b>.</li>
+        <li>Konfigurasi repo <code>itn-edunusa-pipeline-templates</code>.</li>
+        <li>Label Traefik yang terpasang pada container yang sedang berjalan.</li>
+        <li>Keluaran <code>neofetch</code> pada mesin virtual <code>edunusa-tools</code>.</li>
+      </ul>
+
+      <h3>Belum terverifikasi</h3>
+      <ul class="clean">
+        <li>Apakah API backend environment <b>development</b> juga dibatasi daftar IP seperti frontend-nya.</li>
+        <li>Apakah container frontend memanggil backend langsung lewat jaringan Docker, selain lewat Kong.</li>
+        <li>Kebijakan retensi log di VictoriaLogs, yaitu berapa lama log disimpan sebelum dihapus.</li>
+        <li>Prosedur backup dan pemulihan PostgreSQL serta MinIO.</li>
+      </ul>
+
+      <div class="note">
+        <p><b>Cara memperbarui dokumen ini:</b> setiap perubahan pada label Traefik, penambahan environment,
+        atau perubahan alur pipeline perlu tercermin di sini. Ubah juga tanggal verifikasi di bagian atas
+        agar pembaca tahu seberapa baru isinya.</p>
+      </div>
+    </section>
+
+    <footer>
+      <span>PT Instrumeta Teknologi Nusantara</span>
+      <span>itn-edunusa</span>
+      <span>ghcr.io/pt-instrumeta-teknologi-nusantara</span>
+      <span>diverifikasi 2026-09-08</span>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  (function () {
+    var body = document.body;
+    var bR = document.getElementById('btn-ringkas');
+    var bL = document.getElementById('btn-lengkap');
+    var hint = document.getElementById('switch-hint');
+
+    function setMode(mode, persist) {
+      var ringkas = mode === 'ringkas';
+      body.classList.toggle('ringkas', ringkas);
+      bR.setAttribute('aria-pressed', String(ringkas));
+      bL.setAttribute('aria-pressed', String(!ringkas));
+      hint.innerHTML = ringkas
+        ? 'Mode <b style="color:var(--cyan)">Ringkas</b> menyembunyikan nama teknis, alamat IP, dan konfigurasi.'
+        : 'Mode <b style="color:var(--cyan)">Lengkap</b> menampilkan nama teknis, alamat IP, dan konfigurasi.';
+      if (persist) { try { localStorage.setItem('edunusa-mode', mode); } catch (e) {} }
+    }
+
+    bR.addEventListener('click', function () { setMode('ringkas', true); });
+    bL.addEventListener('click', function () { setMode('lengkap', true); });
+
+    var saved = null;
+    try { saved = localStorage.getItem('edunusa-mode'); } catch (e) {}
+    setMode(saved === 'ringkas' ? 'ringkas' : 'lengkap', false);
+
+    // sorot bagian yang sedang dibaca pada daftar isi
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var sections = links
+      .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+      .filter(Boolean);
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          links.forEach(function (a) {
+            var on = a.getAttribute('href') === '#' + en.target.id;
+            a.style.color = on ? 'var(--text)' : '';
+            a.style.borderLeftColor = on ? 'var(--cyan)' : '';
+          });
+        });
+      }, { rootMargin: '-10% 0px -70% 0px' });
+      sections.forEach(function (s) { obs.observe(s); });
+    }
+  })();
+</script>
+</body>
+</html>
